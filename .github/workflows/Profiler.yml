@@ -1,0 +1,33 @@
+name: Profiler
+on: workflow_dispatch
+
+jobs:
+  build:
+    runs-on: ubuntu-26.04
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: '0'
+
+      - name: Setup
+        run: |
+          git rev-parse --short HEAD
+          . ./build.sh
+
+      - name: Run
+        run: |
+          /usr/bin/time -v ./bin/MultiFloatsBenchmarkClang --benchmark_out=MultiFloats-Clang-branch.json
+
+      # Compile code from main branch for comparison.
+      - name: Compile main
+        run: |
+          rm -rf bin
+          git checkout main
+          git rev-parse --short HEAD
+          . ./build.sh
+
+      # Run main code for comparison
+      - name: Run main
+        run: |
+          /usr/bin/time -v /bin/MultiFloatsBenchmarkClang --benchmark_out=MultiFloats-Clang-main.json
