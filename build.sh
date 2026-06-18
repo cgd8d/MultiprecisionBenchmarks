@@ -2,7 +2,11 @@
 
 set -eux
 
+cat /proc/cpuinfo
+
 mkdir -p bin
+
+sudo apt-get install libbenchmark-dev
 
 DIALECT_FLAGS="-std=c++17 -ffp-contract=off -fno-math-errno"
 
