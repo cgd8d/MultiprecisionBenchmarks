@@ -8,7 +8,7 @@ mkdir -p bin
 
 sudo apt-get install libbenchmark-dev
 
-DIALECT_FLAGS="-std=c++17 -ffp-contract=off -fno-math-errno"
+DIALECT_FLAGS="-std=c++17 -fopenmp -ffp-contract=off -fno-math-errno"
 
 GCC_WARNING_FLAGS="-Wall -Wextra -Wpedantic -pedantic-errors -Wshadow \
     -Wconversion -Warith-conversion -Wdouble-promotion \
