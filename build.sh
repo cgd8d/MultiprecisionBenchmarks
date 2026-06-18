@@ -6,7 +6,7 @@ cat /proc/cpuinfo
 
 mkdir -p bin
 
-sudo apt-get install libbenchmark-dev
+sudo apt-get install libbenchmark-dev libomp-dev
 
 DIALECT_FLAGS="-std=c++17 -fopenmp -ffp-contract=off -fno-math-errno"
 
