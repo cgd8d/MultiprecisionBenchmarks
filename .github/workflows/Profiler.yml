@@ -30,4 +30,4 @@ jobs:
       # Run main code for comparison
       - name: Run main
         run: |
-          /usr/bin/time -v /bin/MultiFloatsBenchmarkClang --benchmark_out=MultiFloats-Clang-main.json
+          /usr/bin/time -v ./bin/MultiFloatsBenchmarkClang --benchmark_out=MultiFloats-Clang-main.json
