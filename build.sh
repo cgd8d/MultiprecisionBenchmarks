@@ -21,7 +21,7 @@ CLANG_WARNING_FLAGS="-Weverything -Wno-float-equal -Wno-c++98-compat-pedantic \
 OPTIMIZATION_FLAGS="-O3 -march=native -flto \
     -fvisibility=hidden -fmerge-all-constants"
 
-clang++-20 $DIALECT_FLAGS $CLANG_WARNING_FLAGS $OPTIMIZATION_FLAGS \
+clang++ $DIALECT_FLAGS $CLANG_WARNING_FLAGS $OPTIMIZATION_FLAGS \
     -isystem./include -I./common \
     multifloats/main.cpp -lbenchmark -lbenchmark_main \
     -o bin/MultiFloatsBenchmarkClang
