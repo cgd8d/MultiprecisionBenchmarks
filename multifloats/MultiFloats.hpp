@@ -130,10 +130,22 @@ struct MultiFloat {
         : _limbs{static_cast<T>(std::forward<Args>(args))...} {}
 
     constexpr bool operator==(const T rhs) const {
-        bool result = true;
-        result &= (_limbs[0] == rhs);
-        for (int i = 1; i < N; ++i) { result &= (_limbs[i] == zero<T>()); }
-        return result;
+        template<class Args...>
+        bool doTest(tuple<T, Args...> t, const T rhs) {
+            bool result = true;
+            result &= (std::get<0>(_limbs) == rhs);
+            result &= std::apply(
+                [](const T& t0, const Args&... args) {
+                    return (
+                        (args == zero<T>()) and ...
+                    );
+                },
+                _limbs
+            );
+            return result;
+        };
+        //for (int i = 1; i < N; ++i) { result &= (_limbs[i] == zero<T>()); }
+        return doTest(_limbs, rhs);
     }
 
     constexpr MultiFloat &operator+=(const MultiFloat rhs) {
