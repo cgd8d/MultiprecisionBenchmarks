@@ -6,6 +6,7 @@
 #include <smmintrin.h>
 #include <tuple>
 #include <type_traits>
+#include <boost/mp11/algorithm.hpp>
 
 template <typename T>
 static constexpr std::tuple<T, T> two_sum(const T a, const T b) {
@@ -103,15 +104,23 @@ inline __m512d from_scalar(const double x) {
 template <typename T, int N>
 struct MultiFloat {
 
-    T _limbs[N];
+    using N_T_tupleT = boost::mp11::mp_repeat_c<std::tuple<T>, N>;
+    N_T_tupleT _limbs;
 
     constexpr MultiFloat() : _limbs{} {
-        for (int i = 0; i < N; ++i) { _limbs[i] = zero<T>(); }
+        std::apply(
+            [](auto&&... args)
+            {(
+                (args = zero<T>()), ...
+            );},
+            _limbs
+        );
+        //for (int i = 0; i < N; ++i) { _limbs[i] = zero<T>(); }
     }
 
-    constexpr MultiFloat(const double x) : _limbs{} {
-        _limbs[0] = from_scalar<T>(x);
-        for (int i = 1; i < N; ++i) { _limbs[i] = zero<T>(); }
+    constexpr MultiFloat(const double x) : MultiFloat() {
+        std::get<0>(_limbs) = from_scalar<T>(x);
+        //for (int i = 1; i < N; ++i) { _limbs[i] = zero<T>(); }
     }
 
     template <typename... Args, typename = std::enable_if_t<
