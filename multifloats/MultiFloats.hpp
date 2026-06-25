@@ -131,11 +131,13 @@ struct MultiFloat {
 
     constexpr bool operator==(const T rhs) const {
         return std::apply(
-            [&rhs](T t0, auto&& args...) -> bool {
+            [&rhs](T t0, auto&& args...) constexpr -> bool {
                 return (
                     (t0 == rhs) and ... and (args == zero<T>())
                 );
-            }, _limbs);
+            },
+            _limbs
+        );
         /*template<class Args...>
         bool doTest(tuple<T, Args...> t, const T rhs) {
             bool result = true;
@@ -168,12 +170,30 @@ struct MultiFloat {
 
 template <int N>
 static constexpr MultiFloat<double, N> vsum(const MultiFloat<__m128d, N> x) {
-    MultiFloat<double, N> lo;
-    for (int i = 0; i < N; ++i) { lo._limbs[i] = _mm_cvtsd_f64(x._limbs[i]); }
-    MultiFloat<double, N> hi;
-    for (int i = 0; i < N; ++i) {
-        hi._limbs[i] = _mm_cvtsd_f64(_mm_unpackhi_pd(x._limbs[i], x._limbs[i]));
-    }
+    MultiFloat<double, N> lo(
+        std::apply(
+            [](auto&& args...){
+                std::make_tuple(
+                    _mm_cvtsd_f64(args)...
+                );
+            },
+            x._limbs
+        )
+    );
+    //for (int i = 0; i < N; ++i) { lo._limbs[i] = _mm_cvtsd_f64(x._limbs[i]); }
+    MultiFloat<double, N> hi(
+        std::apply(
+            [](auto&& args...){
+                std::make_tuple(
+                    _mm_cvtsd_f64(_mm_unpackhi_pd(args, args))...
+                );
+            },
+            x._limbs
+        )
+    );
+    //for (int i = 0; i < N; ++i) {
+    //    hi._limbs[i] = _mm_cvtsd_f64(_mm_unpackhi_pd(x._limbs[i], x._limbs[i]));
+    //}
     return lo + hi;
 }
 
