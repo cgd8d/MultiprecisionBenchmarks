@@ -318,12 +318,18 @@ static constexpr MultiFloat<T, 3> operator+(const MultiFloat<T, 3> x,
 template <typename T>
 static constexpr MultiFloat<T, 3> operator*(const MultiFloat<T, 3> x,
                                             const MultiFloat<T, 3> y) {
-    const auto [a, b] = two_prod(x._limbs[0], y._limbs[0]);
-    const auto [c, e] = two_prod(x._limbs[0], y._limbs[1]);
-    const auto [d, f] = two_prod(x._limbs[1], y._limbs[0]);
-    const T g = x._limbs[0] * y._limbs[2];
-    const T h = x._limbs[1] * y._limbs[1];
-    const T i = x._limbs[2] * y._limbs[0];
+    const auto [a, b] = two_prod(
+        std::get<0>(x._limbs), std::get<0>(y._limbs)
+    );
+    const auto [c, e] = two_prod(
+        std::get<0>(x._limbs), std::get<1>(y._limbs)
+    );
+    const auto [d, f] = two_prod(
+        std::get<1>(x._limbs), std;:get<0>(y._limbs)
+    );
+    const T g = std::get<0>(x._limbs) * std::get<2>(y._limbs);
+    const T h = std::get<1>(x._limbs) * std::get<1>(y._limbs);
+    const T i = std::get<2>(x._limbs) * std::get<0>(y._limbs);
     const auto [c1, d1] = two_sum(c, d);
     const T e1 = e + f;
     const T g1 = g + i;
@@ -342,14 +348,14 @@ static constexpr MultiFloat<T, 3> operator*(const MultiFloat<T, 3> x,
 template <typename T>
 static constexpr MultiFloat<T, 4> operator+(const MultiFloat<T, 4> x,
                                             const MultiFloat<T, 4> y) {
-    const T a = x._limbs[0];
-    const T b = y._limbs[0];
-    const T c = x._limbs[1];
-    const T d = y._limbs[1];
-    const T e = x._limbs[2];
-    const T f = y._limbs[2];
-    const T g = x._limbs[3];
-    const T h = y._limbs[3];
+    const T a = std::get<0>(x._limbs);
+    const T b = std::get<0>(y._limbs);
+    const T c = std::get<1>(x._limbs);
+    const T d = std::get<1>(y._limbs);
+    const T e = std::get<2>(x._limbs);
+    const T f = std::get<2>(y._limbs);
+    const T g = std::get<3>(x._limbs);
+    const T h = std::get<3>(y._limbs);
     const auto [a1, b1] = two_sum(a, b);
     const auto [c1, d1] = two_sum(c, d);
     const auto [e1, f1] = two_sum(e, f);
