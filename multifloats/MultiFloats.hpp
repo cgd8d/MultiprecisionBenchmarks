@@ -278,9 +278,11 @@ static constexpr MultiFloat<T, 2> operator+(const MultiFloat<T, 2> x,
 template <typename T>
 static constexpr MultiFloat<T, 2> operator*(const MultiFloat<T, 2> x,
                                             const MultiFloat<T, 2> y) {
-    const auto [a, b] = two_prod(x._limbs[0], y._limbs[0]);
-    const T c = x._limbs[0] * y._limbs[1];
-    const T d = x._limbs[1] * y._limbs[0];
+    const auto [a, b] = two_prod(
+        std::get<0>(x._limbs), std::get<0>(y._limbs)
+    );
+    const T c = std::get<0>(x._limbs) * std::get<1>(y._limbs);
+    const T d = std::get<1>(x._limbs) * std::get<0>(y._limbs);
     const T c1 = c + d;
     const T b2 = b + c1;
     const auto [a3, b3] = fast_two_sum(a, b2);
@@ -290,12 +292,12 @@ static constexpr MultiFloat<T, 2> operator*(const MultiFloat<T, 2> x,
 template <typename T>
 static constexpr MultiFloat<T, 3> operator+(const MultiFloat<T, 3> x,
                                             const MultiFloat<T, 3> y) {
-    const T a = x._limbs[0];
-    const T b = y._limbs[0];
-    const T c = x._limbs[1];
-    const T d = y._limbs[1];
-    const T e = x._limbs[2];
-    const T f = y._limbs[2];
+    const T a = std::get<0>(x._limbs);
+    const T b = std::get<0>(y._limbs);
+    const T c = std::get<1>(x._limbs);
+    const T d = std::get<1>(y._limbs);
+    const T e = std::get<2>(x._limbs);
+    const T f = std::get<2>(y._limbs);
     const auto [a1, b1] = two_sum(a, b);
     const auto [c1, d1] = two_sum(c, d);
     const auto [e1, f1] = two_sum(e, f);
