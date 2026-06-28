@@ -325,7 +325,7 @@ static constexpr MultiFloat<T, 3> operator*(const MultiFloat<T, 3> x,
         std::get<0>(x._limbs), std::get<1>(y._limbs)
     );
     const auto [d, f] = two_prod(
-        std::get<1>(x._limbs), std;:get<0>(y._limbs)
+        std::get<1>(x._limbs), std::get<0>(y._limbs)
     );
     const T g = std::get<0>(x._limbs) * std::get<2>(y._limbs);
     const T h = std::get<1>(x._limbs) * std::get<1>(y._limbs);
@@ -388,12 +388,24 @@ static constexpr MultiFloat<T, 4> operator+(const MultiFloat<T, 4> x,
 template <typename T>
 static constexpr MultiFloat<T, 4> operator*(const MultiFloat<T, 4> x,
                                             const MultiFloat<T, 4> y) {
-    const auto [a, b] = two_prod(x._limbs[0], y._limbs[0]);
-    const auto [c, e] = two_prod(x._limbs[0], y._limbs[1]);
-    const auto [d, f] = two_prod(x._limbs[1], y._limbs[0]);
-    const auto [g, j] = two_prod(x._limbs[0], y._limbs[2]);
-    const auto [h, k] = two_prod(x._limbs[1], y._limbs[1]);
-    const auto [i, l] = two_prod(x._limbs[2], y._limbs[0]);
+    const auto [a, b] = two_prod(
+        std::get<0>(x._limbs), std::get<0>(y._limbs)
+    );
+    const auto [c, e] = two_prod(
+        std::get<0>(x._limbs), std::get<1>(y._limbs)
+    );
+    const auto [d, f] = two_prod(
+        std::get<1>(x._limbs), std::get<0>(y._limbs)
+    );
+    const auto [g, j] = two_prod(
+        std::get<0>(x._limbs), std::get<2>(y._limbs)
+    );
+    const auto [h, k] = two_prod(
+        std::get<1>(x._limbs), std::get<1>(y._limbs)
+    );
+    const auto [i, l] = two_prod(
+        std::get<2>(x._limbs), std::get<0>(y._limbs)
+    );
     const T m = x._limbs[0] * y._limbs[3];
     const T n = x._limbs[1] * y._limbs[2];
     const T o = x._limbs[2] * y._limbs[1];
