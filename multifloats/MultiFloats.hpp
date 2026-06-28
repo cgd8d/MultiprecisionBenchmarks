@@ -406,10 +406,10 @@ static constexpr MultiFloat<T, 4> operator*(const MultiFloat<T, 4> x,
     const auto [i, l] = two_prod(
         std::get<2>(x._limbs), std::get<0>(y._limbs)
     );
-    const T m = x._limbs[0] * y._limbs[3];
-    const T n = x._limbs[1] * y._limbs[2];
-    const T o = x._limbs[2] * y._limbs[1];
-    const T p = x._limbs[3] * y._limbs[0];
+    const T m = std::get<0>(x._limbs) * std::get<3>(y._limbs);
+    const T n = std::get<1>(x._limbs) * std::get<2>(y._limbs);
+    const T o = std::get<2>(x._limbs) * std::get<1>(y._limbs);
+    const T p = std::get<3>(x._limbs) * std::get<0>(y._limbs);
     const auto [c1, d1] = two_sum(c, d);
     const auto [e1, f1] = two_sum(e, f);
     const auto [g1, i1] = two_sum(g, i);
