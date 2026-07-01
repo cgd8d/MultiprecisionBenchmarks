@@ -6,6 +6,7 @@
 #include <smmintrin.h>
 #include <tuple>
 #include <type_traits>
+#include <boost/mp11/algorithm.hpp>
 
 template <typename T>
 static constexpr std::tuple<T, T> two_sum(const T a, const T b) {
@@ -103,15 +104,23 @@ inline __m512d from_scalar(const double x) {
 template <typename T, int N>
 struct MultiFloat {
 
-    T _limbs[N];
+    using N_T_tupleT = boost::mp11::mp_repeat_c<std::tuple<T>, N>;
+    N_T_tupleT _limbs;
 
     constexpr MultiFloat() : _limbs{} {
-        for (int i = 0; i < N; ++i) { _limbs[i] = zero<T>(); }
+        std::apply(
+            [](auto&&... args)
+            {(
+                (args = zero<T>()), ...
+            );},
+            _limbs
+        );
+        //for (int i = 0; i < N; ++i) { _limbs[i] = zero<T>(); }
     }
 
-    constexpr MultiFloat(const double x) : _limbs{} {
-        _limbs[0] = from_scalar<T>(x);
-        for (int i = 1; i < N; ++i) { _limbs[i] = zero<T>(); }
+    constexpr MultiFloat(const double x) : MultiFloat() {
+        std::get<0>(_limbs) = from_scalar<T>(x);
+        //for (int i = 1; i < N; ++i) { _limbs[i] = zero<T>(); }
     }
 
     template <typename... Args, typename = std::enable_if_t<
@@ -121,10 +130,14 @@ struct MultiFloat {
         : _limbs{static_cast<T>(std::forward<Args>(args))...} {}
 
     constexpr bool operator==(const T rhs) const {
-        bool result = true;
-        result &= (_limbs[0] == rhs);
-        for (int i = 1; i < N; ++i) { result &= (_limbs[i] == zero<T>()); }
-        return result;
+        return std::apply(
+            [rhs](T t0, auto&& args...) constexpr -> bool {
+                return (
+                    (t0 == rhs) and ... and (args == zero<T>())
+                );
+            },
+            _limbs
+        );
     }
 
     constexpr MultiFloat &operator+=(const MultiFloat rhs) {
@@ -141,64 +154,118 @@ struct MultiFloat {
 
 template <int N>
 static constexpr MultiFloat<double, N> vsum(const MultiFloat<__m128d, N> x) {
-    MultiFloat<double, N> lo;
-    for (int i = 0; i < N; ++i) { lo._limbs[i] = _mm_cvtsd_f64(x._limbs[i]); }
-    MultiFloat<double, N> hi;
-    for (int i = 0; i < N; ++i) {
-        hi._limbs[i] = _mm_cvtsd_f64(_mm_unpackhi_pd(x._limbs[i], x._limbs[i]));
-    }
+    MultiFloat<double, N> lo(
+        std::apply(
+            [](auto&& args...){
+                return std::make_tuple(
+                    _mm_cvtsd_f64(args)...
+                );
+            },
+            x._limbs
+        )
+    );
+    //for (int i = 0; i < N; ++i) { lo._limbs[i] = _mm_cvtsd_f64(x._limbs[i]); }
+    MultiFloat<double, N> hi(
+        std::apply(
+            [](auto&& args...){
+                return std::make_tuple(
+                    _mm_cvtsd_f64(_mm_unpackhi_pd(args, args))...
+                );
+            },
+            x._limbs
+        )
+    );
+    //for (int i = 0; i < N; ++i) {
+    //    hi._limbs[i] = _mm_cvtsd_f64(_mm_unpackhi_pd(x._limbs[i], x._limbs[i]));
+    //}
     return lo + hi;
 }
 
 template <int N>
 static constexpr MultiFloat<double, N> vsum(const MultiFloat<__m256d, N> x) {
-    MultiFloat<__m128d, N> lo;
-    for (int i = 0; i < N; ++i) {
+    MultiFloat<__m128d, N> lo(
+        std::apply(
+            [](auto&& args...){
+                return std::make_tuple(
+                    _mm256_extractf64x2_pd(args, 0)...
+                );
+            },
+            x._limbs
+        )
+    );
+    /*for (int i = 0; i < N; ++i) {
         lo._limbs[i] = _mm256_extractf64x2_pd(x._limbs[i], 0);
-    }
-    MultiFloat<__m128d, N> hi;
-    for (int i = 0; i < N; ++i) {
+    }*/
+    MultiFloat<__m128d, N> hi(
+        std::apply(
+            [](auto&& args...){
+                return std::make_tuple(
+                    _mm256_extractf64x2_pd(args, 1)...
+                );
+            },
+            x._limbs
+        )
+    );
+    /*for (int i = 0; i < N; ++i) {
         hi._limbs[i] = _mm256_extractf64x2_pd(x._limbs[i], 1);
-    }
+    }*/
     return vsum(lo + hi);
 }
 
 template <int N>
 static constexpr MultiFloat<double, N> vsum(const MultiFloat<__m512d, N> x) {
-    MultiFloat<__m256d, N> lo;
-    for (int i = 0; i < N; ++i) {
+    MultiFloat<__m256d, N> lo(
+        std::apply(
+            [](auto&& args...){
+                return std::make_tuple(
+                    _mm512_extractf64x4_pd(args, 0)...
+                );
+            },
+            x._limbs
+        )
+    );
+    /*for (int i = 0; i < N; ++i) {
         lo._limbs[i] = _mm512_extractf64x4_pd(x._limbs[i], 0);
-    }
-    MultiFloat<__m256d, N> hi;
-    for (int i = 0; i < N; ++i) {
+    }*/
+    MultiFloat<__m256d, N> hi(
+        std::apply(
+            [](auto&& args...){
+                return std::make_tuple(
+                    _mm512_extractf64x4_pd(args, 1)...
+                );
+            },
+            x._limbs
+        )
+    );
+    /*for (int i = 0; i < N; ++i) {
         hi._limbs[i] = _mm512_extractf64x4_pd(x._limbs[i], 1);
-    }
+    }*/
     return vsum(lo + hi);
 }
 
 template <typename T>
 static constexpr MultiFloat<T, 1> operator+(const MultiFloat<T, 1> x,
                                             const MultiFloat<T, 1> y) {
-    const T a = x._limbs[0];
-    const T b = y._limbs[0];
+    const T a = std::get<0>(x._limbs);
+    const T b = std::get<0>(y._limbs);
     return MultiFloat<T, 1>{a + b};
 }
 
 template <typename T>
 static constexpr MultiFloat<T, 1> operator*(const MultiFloat<T, 1> x,
                                             const MultiFloat<T, 1> y) {
-    const T a = x._limbs[0];
-    const T b = y._limbs[0];
+    const T a = std::get<0>(x._limbs);
+    const T b = std::get<0>(y._limbs);
     return MultiFloat<T, 1>{a * b};
 }
 
 template <typename T>
 static constexpr MultiFloat<T, 2> operator+(const MultiFloat<T, 2> x,
                                             const MultiFloat<T, 2> y) {
-    const T a = x._limbs[0];
-    const T b = y._limbs[0];
-    const T c = x._limbs[1];
-    const T d = y._limbs[1];
+    const T a = std::get<0>(x._limbs);
+    const T b = std::get<0>(y._limbs);
+    const T c = std::get<1>(x._limbs);
+    const T d = std::get<1>(y._limbs);
     const auto [a1, b1] = two_sum(a, b);
     const auto [c1, d1] = two_sum(c, d);
     const auto [a2, c2] = fast_two_sum(a1, c1);
@@ -211,9 +278,11 @@ static constexpr MultiFloat<T, 2> operator+(const MultiFloat<T, 2> x,
 template <typename T>
 static constexpr MultiFloat<T, 2> operator*(const MultiFloat<T, 2> x,
                                             const MultiFloat<T, 2> y) {
-    const auto [a, b] = two_prod(x._limbs[0], y._limbs[0]);
-    const T c = x._limbs[0] * y._limbs[1];
-    const T d = x._limbs[1] * y._limbs[0];
+    const auto [a, b] = two_prod(
+        std::get<0>(x._limbs), std::get<0>(y._limbs)
+    );
+    const T c = std::get<0>(x._limbs) * std::get<1>(y._limbs);
+    const T d = std::get<1>(x._limbs) * std::get<0>(y._limbs);
     const T c1 = c + d;
     const T b2 = b + c1;
     const auto [a3, b3] = fast_two_sum(a, b2);
@@ -223,12 +292,12 @@ static constexpr MultiFloat<T, 2> operator*(const MultiFloat<T, 2> x,
 template <typename T>
 static constexpr MultiFloat<T, 3> operator+(const MultiFloat<T, 3> x,
                                             const MultiFloat<T, 3> y) {
-    const T a = x._limbs[0];
-    const T b = y._limbs[0];
-    const T c = x._limbs[1];
-    const T d = y._limbs[1];
-    const T e = x._limbs[2];
-    const T f = y._limbs[2];
+    const T a = std::get<0>(x._limbs);
+    const T b = std::get<0>(y._limbs);
+    const T c = std::get<1>(x._limbs);
+    const T d = std::get<1>(y._limbs);
+    const T e = std::get<2>(x._limbs);
+    const T f = std::get<2>(y._limbs);
     const auto [a1, b1] = two_sum(a, b);
     const auto [c1, d1] = two_sum(c, d);
     const auto [e1, f1] = two_sum(e, f);
@@ -249,12 +318,18 @@ static constexpr MultiFloat<T, 3> operator+(const MultiFloat<T, 3> x,
 template <typename T>
 static constexpr MultiFloat<T, 3> operator*(const MultiFloat<T, 3> x,
                                             const MultiFloat<T, 3> y) {
-    const auto [a, b] = two_prod(x._limbs[0], y._limbs[0]);
-    const auto [c, e] = two_prod(x._limbs[0], y._limbs[1]);
-    const auto [d, f] = two_prod(x._limbs[1], y._limbs[0]);
-    const T g = x._limbs[0] * y._limbs[2];
-    const T h = x._limbs[1] * y._limbs[1];
-    const T i = x._limbs[2] * y._limbs[0];
+    const auto [a, b] = two_prod(
+        std::get<0>(x._limbs), std::get<0>(y._limbs)
+    );
+    const auto [c, e] = two_prod(
+        std::get<0>(x._limbs), std::get<1>(y._limbs)
+    );
+    const auto [d, f] = two_prod(
+        std::get<1>(x._limbs), std::get<0>(y._limbs)
+    );
+    const T g = std::get<0>(x._limbs) * std::get<2>(y._limbs);
+    const T h = std::get<1>(x._limbs) * std::get<1>(y._limbs);
+    const T i = std::get<2>(x._limbs) * std::get<0>(y._limbs);
     const auto [c1, d1] = two_sum(c, d);
     const T e1 = e + f;
     const T g1 = g + i;
@@ -273,14 +348,14 @@ static constexpr MultiFloat<T, 3> operator*(const MultiFloat<T, 3> x,
 template <typename T>
 static constexpr MultiFloat<T, 4> operator+(const MultiFloat<T, 4> x,
                                             const MultiFloat<T, 4> y) {
-    const T a = x._limbs[0];
-    const T b = y._limbs[0];
-    const T c = x._limbs[1];
-    const T d = y._limbs[1];
-    const T e = x._limbs[2];
-    const T f = y._limbs[2];
-    const T g = x._limbs[3];
-    const T h = y._limbs[3];
+    const T a = std::get<0>(x._limbs);
+    const T b = std::get<0>(y._limbs);
+    const T c = std::get<1>(x._limbs);
+    const T d = std::get<1>(y._limbs);
+    const T e = std::get<2>(x._limbs);
+    const T f = std::get<2>(y._limbs);
+    const T g = std::get<3>(x._limbs);
+    const T h = std::get<3>(y._limbs);
     const auto [a1, b1] = two_sum(a, b);
     const auto [c1, d1] = two_sum(c, d);
     const auto [e1, f1] = two_sum(e, f);
@@ -313,16 +388,28 @@ static constexpr MultiFloat<T, 4> operator+(const MultiFloat<T, 4> x,
 template <typename T>
 static constexpr MultiFloat<T, 4> operator*(const MultiFloat<T, 4> x,
                                             const MultiFloat<T, 4> y) {
-    const auto [a, b] = two_prod(x._limbs[0], y._limbs[0]);
-    const auto [c, e] = two_prod(x._limbs[0], y._limbs[1]);
-    const auto [d, f] = two_prod(x._limbs[1], y._limbs[0]);
-    const auto [g, j] = two_prod(x._limbs[0], y._limbs[2]);
-    const auto [h, k] = two_prod(x._limbs[1], y._limbs[1]);
-    const auto [i, l] = two_prod(x._limbs[2], y._limbs[0]);
-    const T m = x._limbs[0] * y._limbs[3];
-    const T n = x._limbs[1] * y._limbs[2];
-    const T o = x._limbs[2] * y._limbs[1];
-    const T p = x._limbs[3] * y._limbs[0];
+    const auto [a, b] = two_prod(
+        std::get<0>(x._limbs), std::get<0>(y._limbs)
+    );
+    const auto [c, e] = two_prod(
+        std::get<0>(x._limbs), std::get<1>(y._limbs)
+    );
+    const auto [d, f] = two_prod(
+        std::get<1>(x._limbs), std::get<0>(y._limbs)
+    );
+    const auto [g, j] = two_prod(
+        std::get<0>(x._limbs), std::get<2>(y._limbs)
+    );
+    const auto [h, k] = two_prod(
+        std::get<1>(x._limbs), std::get<1>(y._limbs)
+    );
+    const auto [i, l] = two_prod(
+        std::get<2>(x._limbs), std::get<0>(y._limbs)
+    );
+    const T m = std::get<0>(x._limbs) * std::get<3>(y._limbs);
+    const T n = std::get<1>(x._limbs) * std::get<2>(y._limbs);
+    const T o = std::get<2>(x._limbs) * std::get<1>(y._limbs);
+    const T p = std::get<3>(x._limbs) * std::get<0>(y._limbs);
     const auto [c1, d1] = two_sum(c, d);
     const auto [e1, f1] = two_sum(e, f);
     const auto [g1, i1] = two_sum(g, i);
