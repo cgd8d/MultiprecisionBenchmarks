@@ -32,7 +32,7 @@ static void axpy(double *y0, f64x1 a, const double *x0, std::size_t n) {
             const f64x1 y(y0[i]);
             const f64x1 x(x0[i]);
             const f64x1 z = y + a * x;
-            y0[i] = z._limbs[0];
+            y0[i] = std::get<0>(z._limbs);
         }
     }
 }
@@ -48,8 +48,8 @@ static void axpy(double *y0, double *y1, f64x2 a, const double *x0,
             const f64x2 y(y0[i], y1[i]);
             const f64x2 x(x0[i], x1[i]);
             const f64x2 z = y + a * x;
-            y0[i] = z._limbs[0];
-            y1[i] = z._limbs[1];
+            y0[i] = std::get<0>(z._limbs);
+            y1[i] = std::get<1>(z._limbs);
         }
     }
 }
@@ -65,9 +65,9 @@ static void axpy(double *y0, double *y1, double *y2, f64x3 a, const double *x0,
             const f64x3 y(y0[i], y1[i], y2[i]);
             const f64x3 x(x0[i], x1[i], x2[i]);
             const f64x3 z = y + a * x;
-            y0[i] = z._limbs[0];
-            y1[i] = z._limbs[1];
-            y2[i] = z._limbs[2];
+            y0[i] = std::get<0>(z._limbs);
+            y1[i] = std::get<1>(z._limbs);
+            y2[i] = std::get<2>(z._limbs);
         }
     }
 }
@@ -84,10 +84,10 @@ static void axpy(double *y0, double *y1, double *y2, double *y3, f64x4 a,
             const f64x4 y(y0[i], y1[i], y2[i], y3[i]);
             const f64x4 x(x0[i], x1[i], x2[i], x3[i]);
             const f64x4 z = y + a * x;
-            y0[i] = z._limbs[0];
-            y1[i] = z._limbs[1];
-            y2[i] = z._limbs[2];
-            y3[i] = z._limbs[3];
+            y0[i] = std::get<0>(z._limbs);
+            y1[i] = std::get<1>(z._limbs);
+            y2[i] = std::get<2>(z._limbs);
+            y3[i] = std::get<3>(z._limbs);
         }
     }
 }
@@ -223,7 +223,7 @@ static void gemv(double *y0, const double *A0, const double *x0,
             scalar_sum += A * x;
         }
         scalar_sum += vsum(vector_sum);
-        y0[i] = scalar_sum._limbs[0];
+        y0[i] = std::get<0>(scalar_sum._limbs);
     }
 }
 
@@ -246,8 +246,8 @@ static void gemv(double *y0, double *y1, const double *A0, const double *A1,
             scalar_sum += A * x;
         }
         scalar_sum += vsum(vector_sum);
-        y0[i] = scalar_sum._limbs[0];
-        y1[i] = scalar_sum._limbs[1];
+        y0[i] = std::get<0>(scalar_sum._limbs);
+        y1[i] = std::get<1>(scalar_sum._limbs);
     }
 }
 
@@ -273,9 +273,9 @@ static void gemv(double *y0, double *y1, double *y2, const double *A0,
             scalar_sum += A * x;
         }
         scalar_sum += vsum(vector_sum);
-        y0[i] = scalar_sum._limbs[0];
-        y1[i] = scalar_sum._limbs[1];
-        y2[i] = scalar_sum._limbs[2];
+        y0[i] = std::get<0>(scalar_sum._limbs);
+        y1[i] = std::get<1>(scalar_sum._limbs);
+        y2[i] = std::get<2>(scalar_sum._limbs);
     }
 }
 
@@ -304,10 +304,10 @@ static void gemv(double *y0, double *y1, double *y2, double *y3,
             scalar_sum += A * x;
         }
         scalar_sum += vsum(vector_sum);
-        y0[i] = scalar_sum._limbs[0];
-        y1[i] = scalar_sum._limbs[1];
-        y2[i] = scalar_sum._limbs[2];
-        y3[i] = scalar_sum._limbs[3];
+        y0[i] = std::get<0>(scalar_sum._limbs);
+        y1[i] = std::get<1>(scalar_sum._limbs);
+        y2[i] = std::get<2>(scalar_sum._limbs);
+        y3[i] = std::get<3>(scalar_sum._limbs);
     }
 }
 
@@ -325,7 +325,7 @@ static void gemm(double *C0, const double *A0, const double *B0,
                     const f64x1 B(B0[k * n + j]);
                     const f64x1 C(C0[i * n + j]);
                     const f64x1 z = C + A * B;
-                    C0[i * n + j] = z._limbs[0];
+                    C0[i * n + j] = std::get<0>(z._limbs);
                 }
             }
         }
@@ -346,8 +346,8 @@ static void gemm(double *C0, double *C1, const double *A0, const double *A1,
                     const f64x2 B(B0[k * n + j], B1[k * n + j]);
                     const f64x2 C(C0[i * n + j], C1[i * n + j]);
                     const f64x2 z = C + A * B;
-                    C0[i * n + j] = z._limbs[0];
-                    C1[i * n + j] = z._limbs[1];
+                    C0[i * n + j] = std::get<0>(z._limbs);
+                    C1[i * n + j] = std::get<1>(z._limbs);
                 }
             }
         }
@@ -369,9 +369,9 @@ static void gemm(double *C0, double *C1, double *C2, const double *A0,
                     const f64x3 B(B0[k * n + j], B1[k * n + j], B2[k * n + j]);
                     const f64x3 C(C0[i * n + j], C1[i * n + j], C2[i * n + j]);
                     const f64x3 z = C + A * B;
-                    C0[i * n + j] = z._limbs[0];
-                    C1[i * n + j] = z._limbs[1];
-                    C2[i * n + j] = z._limbs[2];
+                    C0[i * n + j] = std::get<0>(z._limbs);
+                    C1[i * n + j] = std::get<1>(z._limbs);
+                    C2[i * n + j] = std::get<2>(z._limbs);
                 }
             }
         }
@@ -397,10 +397,10 @@ static void gemm(double *C0, double *C1, double *C2, double *C3,
                     const f64x4 C(C0[i * n + j], C1[i * n + j], C2[i * n + j],
                                   C3[i * n + j]);
                     const f64x4 z = C + A * B;
-                    C0[i * n + j] = z._limbs[0];
-                    C1[i * n + j] = z._limbs[1];
-                    C2[i * n + j] = z._limbs[2];
-                    C3[i * n + j] = z._limbs[3];
+                    C0[i * n + j] = std::get<0>(z._limbs);
+                    C1[i * n + j] = std::get<1>(z._limbs);
+                    C2[i * n + j] = std::get<2>(z._limbs);
+                    C3[i * n + j] = std::get<3>(z._limbs);
                 }
             }
         }
