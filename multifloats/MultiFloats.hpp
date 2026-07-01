@@ -131,7 +131,7 @@ struct MultiFloat {
 
     constexpr bool operator==(const T rhs) const {
         return std::apply(
-            [rhs](T t0, auto&& args...) constexpr -> bool {
+            [rhs](T t0, auto&&... args) constexpr -> bool {
                 return (
                     (t0 == rhs) and ... and (args == zero<T>())
                 );
@@ -156,7 +156,7 @@ template <int N>
 static constexpr MultiFloat<double, N> vsum(const MultiFloat<__m128d, N> x) {
     MultiFloat<double, N> lo(
         std::apply(
-            [](auto&& args...){
+            [](auto&&... args){
                 return std::make_tuple(
                     _mm_cvtsd_f64(args)...
                 );
@@ -167,7 +167,7 @@ static constexpr MultiFloat<double, N> vsum(const MultiFloat<__m128d, N> x) {
     //for (int i = 0; i < N; ++i) { lo._limbs[i] = _mm_cvtsd_f64(x._limbs[i]); }
     MultiFloat<double, N> hi(
         std::apply(
-            [](auto&& args...){
+            [](auto&&... args){
                 return std::make_tuple(
                     _mm_cvtsd_f64(_mm_unpackhi_pd(args, args))...
                 );
@@ -185,7 +185,7 @@ template <int N>
 static constexpr MultiFloat<double, N> vsum(const MultiFloat<__m256d, N> x) {
     MultiFloat<__m128d, N> lo(
         std::apply(
-            [](auto&& args...){
+            [](auto&&... args){
                 return std::make_tuple(
                     _mm256_extractf64x2_pd(args, 0)...
                 );
@@ -198,7 +198,7 @@ static constexpr MultiFloat<double, N> vsum(const MultiFloat<__m256d, N> x) {
     }*/
     MultiFloat<__m128d, N> hi(
         std::apply(
-            [](auto&& args...){
+            [](auto&&... args){
                 return std::make_tuple(
                     _mm256_extractf64x2_pd(args, 1)...
                 );
@@ -216,7 +216,7 @@ template <int N>
 static constexpr MultiFloat<double, N> vsum(const MultiFloat<__m512d, N> x) {
     MultiFloat<__m256d, N> lo(
         std::apply(
-            [](auto&& args...){
+            [](auto&&... args){
                 return std::make_tuple(
                     _mm512_extractf64x4_pd(args, 0)...
                 );
@@ -229,7 +229,7 @@ static constexpr MultiFloat<double, N> vsum(const MultiFloat<__m512d, N> x) {
     }*/
     MultiFloat<__m256d, N> hi(
         std::apply(
-            [](auto&& args...){
+            [](auto&&... args){
                 return std::make_tuple(
                     _mm512_extractf64x4_pd(args, 1)...
                 );
