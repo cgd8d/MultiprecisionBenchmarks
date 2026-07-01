@@ -2,6 +2,8 @@
 
 set -eux
 
+clang++ --version
+
 cat /proc/cpuinfo
 
 mkdir -p bin
