@@ -163,15 +163,13 @@ static constexpr MultiFloat<double, N> vsum(const MultiFloat<__m128d, N> x) {
         x._limbs
     );
     //for (int i = 0; i < N; ++i) { lo._limbs[i] = _mm_cvtsd_f64(x._limbs[i]); }
-    MultiFloat<double, N> hi(
-        std::apply(
-            [](auto&&... args){
-                return std::make_tuple(
-                    _mm_cvtsd_f64(_mm_unpackhi_pd(args, args))...
-                );
-            },
-            x._limbs
-        )
+    MultiFloat<double, N> hi = std::apply(
+        [](auto&&... args){
+            return MultiFloat<double, N>(
+                _mm_cvtsd_f64(_mm_unpackhi_pd(args, args))...
+            );
+        },
+        x._limbs
     );
     //for (int i = 0; i < N; ++i) {
     //    hi._limbs[i] = _mm_cvtsd_f64(_mm_unpackhi_pd(x._limbs[i], x._limbs[i]));
@@ -181,28 +179,24 @@ static constexpr MultiFloat<double, N> vsum(const MultiFloat<__m128d, N> x) {
 
 template <int N>
 static constexpr MultiFloat<double, N> vsum(const MultiFloat<__m256d, N> x) {
-    MultiFloat<__m128d, N> lo(
-        std::apply(
-            [](auto&&... args){
-                return std::make_tuple(
-                    _mm256_extractf64x2_pd(args, 0)...
-                );
-            },
-            x._limbs
-        )
+    MultiFloat<__m128d, N> lo = std::apply(
+        [](auto&&... args){
+            return MultiFloat<__m128d, N>(
+                _mm256_extractf64x2_pd(args, 0)...
+            );
+        },
+        x._limbs
     );
     /*for (int i = 0; i < N; ++i) {
         lo._limbs[i] = _mm256_extractf64x2_pd(x._limbs[i], 0);
     }*/
-    MultiFloat<__m128d, N> hi(
-        std::apply(
-            [](auto&&... args){
-                return std::make_tuple(
-                    _mm256_extractf64x2_pd(args, 1)...
-                );
-            },
-            x._limbs
-        )
+    MultiFloat<__m128d, N> hi = std::apply(
+        [](auto&&... args){
+            return MultiFloat<__m128d, N>(
+                _mm256_extractf64x2_pd(args, 1)...
+            );
+        },
+        x._limbs
     );
     /*for (int i = 0; i < N; ++i) {
         hi._limbs[i] = _mm256_extractf64x2_pd(x._limbs[i], 1);
@@ -223,15 +217,13 @@ static constexpr MultiFloat<double, N> vsum(const MultiFloat<__m512d, N> x) {
     /*for (int i = 0; i < N; ++i) {
         lo._limbs[i] = _mm512_extractf64x4_pd(x._limbs[i], 0);
     }*/
-    MultiFloat<__m256d, N> hi(
-        std::apply(
-            [](auto&&... args){
-                return std::make_tuple(
-                    _mm512_extractf64x4_pd(args, 1)...
-                );
-            },
-            x._limbs
-        )
+    MultiFloat<__m256d, N> hi = std::apply(
+        [](auto&&... args){
+            return MultiFloat<__m256d, N>(
+                _mm512_extractf64x4_pd(args, 1)...
+            );
+        },
+        x._limbs
     );
     /*for (int i = 0; i < N; ++i) {
         hi._limbs[i] = _mm512_extractf64x4_pd(x._limbs[i], 1);
