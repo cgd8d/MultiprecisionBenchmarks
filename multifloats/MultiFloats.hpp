@@ -212,15 +212,13 @@ static constexpr MultiFloat<double, N> vsum(const MultiFloat<__m256d, N> x) {
 
 template <int N>
 static constexpr MultiFloat<double, N> vsum(const MultiFloat<__m512d, N> x) {
-    MultiFloat<__m256d, N> lo(
-        std::apply(
-            [](auto&&... args){
-                return std::make_tuple(
-                    _mm512_extractf64x4_pd(args, 0)...
-                );
-            },
-            x._limbs
-        )
+    MultiFloat<__m256d, N> lo = std::apply(
+        [](auto&&... args){
+            return MultiFloat<__m256d, N>(
+                _mm512_extractf64x4_pd(args, 0)...
+            );
+        },
+        x._limbs
     );
     /*for (int i = 0; i < N; ++i) {
         lo._limbs[i] = _mm512_extractf64x4_pd(x._limbs[i], 0);
