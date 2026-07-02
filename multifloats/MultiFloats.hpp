@@ -154,15 +154,13 @@ struct MultiFloat {
 
 template <int N>
 static constexpr MultiFloat<double, N> vsum(const MultiFloat<__m128d, N> x) {
-    MultiFloat<double, N> lo(
-        std::apply(
-            [](auto&&... args){
-                return std::make_tuple(
-                    _mm_cvtsd_f64(args)...
-                );
-            },
-            x._limbs
-        )
+    MultiFloat<double, N> lo = std::apply(
+        [](auto&&... args){
+            return MultiFloat<double, N>(
+                _mm_cvtsd_f64(args)...
+            );
+        },
+        x._limbs
     );
     //for (int i = 0; i < N; ++i) { lo._limbs[i] = _mm_cvtsd_f64(x._limbs[i]); }
     MultiFloat<double, N> hi(
